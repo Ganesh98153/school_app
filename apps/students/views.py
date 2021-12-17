@@ -8,6 +8,8 @@ from django.http import HttpResponse, HttpResponseRedirect, request
 from django.urls import reverse_lazy
 from django.views.generic import DetailView, ListView, View
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
+from django.contrib.auth.decorators import login_required
+
 
 from apps.finance.models import Invoice
 
@@ -127,20 +129,45 @@ class DownloadCSVViewdownloadcsv(LoginRequiredMixin, View):
         )
 
         return response
+@login_required
+def list_notice(request):
+    object_list = Notice_info.objects.all()
+    return render(request, 'students/notice_list.html', {'object_list': object_list})
+@login_required
+def update_notice(request, pk):
+    if request.method == 'POST':
+        pi = Notice_info.objects.get(id=pk)
+        fm = NoticesForm(request.POST, instance=pi)
+        if fm.is_valid():
+            fm.save()
+    else:
+        pi = Notice_info.objects.get(id=pk)
+        fm = NoticesForm(instance=pi)
+    return render(request, 'students/notice_update.html', {'form': fm })
 
+@login_required
+def delete_notice(request, pk):
+    if request.method == 'POST':
+        pi = Notice_info.objects.get(id=pk)
+        pi.delete()
+    return redirect(list_notice)
+
+@login_required
 def show_notice(request):
     form = NoticesForm()
     return render(request, 'students/notice_publish.html', {'form': form})
 
+@login_required
 def show_vacancy(request):
     form = VacancyForm()
     return render(request, 'students/vacancy_publish.html', {'form': form})
 
+@login_required
 def show_carousel(request):
     form = CarouselForm()
     return render(request, 'students/carousel_publish.html', {'form': form})    
 
-
+@login_required
 def get_notice(request):
     # if this is a POST request we need to process the form data
     if request.method == 'POST':
@@ -158,6 +185,7 @@ def get_notice(request):
         form = NoticesForm()
     return redirect(show_notice)
 
+@login_required
 def get_vacancy(request):
     # if this is a POST request we need to process the form data
     if request.method == 'POST':
@@ -174,7 +202,7 @@ def get_vacancy(request):
     else:
         form = VacancyForm()
     return redirect(show_vacancy)
-
+@login_required
 def get_carousel(request):
     # if this is a POST request we need to process the form data
     if request.method == 'POST':
